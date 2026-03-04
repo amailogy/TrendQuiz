@@ -40,3 +40,5 @@ next-env.d.ts
 
 # quiz data (local dev)
 /data/
+
+.vercel

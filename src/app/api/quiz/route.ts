@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { loadQuiz } from "@/lib/storage";
 import { getTodayJST } from "@/lib/utils";
 
+export const maxDuration = 60;
+
 export async function GET() {
   const today = getTodayJST();
   const quiz = await loadQuiz(today);

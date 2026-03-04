@@ -63,9 +63,22 @@ ${trendContext}
 
   const parsed = JSON.parse(jsonText) as { questions: QuizQuestion[] };
 
+  // Shuffle choices so the correct answer isn't always A
+  const shuffledQuestions = parsed.questions.map((q) => {
+    const correctAnswer = q.choices[q.correctIndex];
+    const indices = [0, 1, 2, 3];
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    const shuffledChoices = indices.map((i) => q.choices[i]);
+    const newCorrectIndex = shuffledChoices.indexOf(correctAnswer);
+    return { ...q, choices: shuffledChoices, correctIndex: newCorrectIndex };
+  });
+
   return {
     date: today,
     generatedAt: new Date().toISOString(),
-    questions: parsed.questions,
+    questions: shuffledQuestions,
   };
 }
