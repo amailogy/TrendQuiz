@@ -22,8 +22,24 @@ function parseQuizResponse(text: string): QuizQuestion[] {
   if (jsonText.startsWith("```")) {
     jsonText = jsonText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
   }
-  const parsed = JSON.parse(jsonText) as { questions: QuizQuestion[] };
-  return parsed.questions;
+  // Try to fix truncated JSON by finding the last complete question object
+  try {
+    const parsed = JSON.parse(jsonText) as { questions: QuizQuestion[] };
+    return parsed.questions;
+  } catch {
+    // Try to salvage partial JSON
+    const lastBracket = jsonText.lastIndexOf("}");
+    if (lastBracket > 0) {
+      const trimmed = jsonText.substring(0, lastBracket + 1) + "]}";
+      try {
+        const parsed = JSON.parse(trimmed) as { questions: QuizQuestion[] };
+        return parsed.questions;
+      } catch {
+        // ignore
+      }
+    }
+    throw new Error("Failed to parse quiz response JSON");
+  }
 }
 
 async function generateBatch(
@@ -32,7 +48,7 @@ async function generateBatch(
   batchIndex: number,
   questionsPerBatch: number,
   today: string,
-  previousQuestions: QuizQuestion[]
+  previousQuestions: string[]
 ): Promise<QuizQuestion[]> {
   const startId = batchIndex * questionsPerBatch + 1;
 
@@ -46,13 +62,10 @@ async function generateBatch(
     })
     .join("\n\n");
 
-  // Build list of already-asked questions to avoid duplicates
+  // Build compact list of already-asked questions
   let previousContext = "";
   if (previousQuestions.length > 0) {
-    const prevList = previousQuestions
-      .map((q) => `- [${q.trendKeyword}] ${q.question}`)
-      .join("\n");
-    previousContext = `\n\n【重要】以下の問題はすでに出題済みです。これらと同じ質問や似た質問は絶対に作らないでください。異なるトピック・切り口・観点で出題してください:\n${prevList}`;
+    previousContext = `\n\n【重要】以下はすでに出題済みの質問です。同じ・類似の質問は絶対に避けてください:\n${previousQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}`;
   }
 
   const prompt = `あなたは日本のトレンドクイズ作成者です。
@@ -89,7 +102,7 @@ ${trendContext}${previousContext}
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
-    max_tokens: 8192,
+    max_tokens: 16384,
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -110,18 +123,32 @@ export async function generateQuiz(
   const totalBatches = Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_BATCH);
 
   const allQuestions: QuizQuestion[] = [];
+  const askedQuestions: string[] = [];
 
   // Generate batches sequentially to pass previous questions for deduplication
   for (let i = 0; i < totalBatches; i++) {
-    const batch = await generateBatch(
-      client,
-      trends,
-      i,
-      QUESTIONS_PER_BATCH,
-      today,
-      allQuestions
-    );
-    allQuestions.push(...batch);
+    let batch: QuizQuestion[] | null = null;
+    let retries = 0;
+    while (!batch && retries < 3) {
+      try {
+        batch = await generateBatch(
+          client,
+          trends,
+          i,
+          QUESTIONS_PER_BATCH,
+          today,
+          askedQuestions
+        );
+      } catch (error) {
+        retries++;
+        console.error(`Batch ${i} attempt ${retries} failed:`, error);
+        if (retries >= 3) throw error;
+      }
+    }
+    if (batch) {
+      allQuestions.push(...batch);
+      askedQuestions.push(...batch.map((q) => q.question));
+    }
   }
 
   // Renumber all questions sequentially
