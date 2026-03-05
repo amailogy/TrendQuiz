@@ -22,24 +22,46 @@ function parseQuizResponse(text: string): QuizQuestion[] {
   if (jsonText.startsWith("```")) {
     jsonText = jsonText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
   }
-  // Try to fix truncated JSON by finding the last complete question object
+
+  // Try direct parse first
   try {
     const parsed = JSON.parse(jsonText) as { questions: QuizQuestion[] };
     return parsed.questions;
   } catch {
-    // Try to salvage partial JSON
-    const lastBracket = jsonText.lastIndexOf("}");
-    if (lastBracket > 0) {
-      const trimmed = jsonText.substring(0, lastBracket + 1) + "]}";
+    // ignore, try recovery below
+  }
+
+  // Try to extract valid JSON by finding matched braces
+  const startIdx = jsonText.indexOf("{");
+  if (startIdx < 0) throw new Error("No JSON found in response");
+
+  // Find all complete question objects using regex
+  const questionRegex = /\{[^{}]*"id"\s*:\s*\d+[^{}]*"question"\s*:[^{}]*"choices"\s*:\s*\[[^\]]*\][^{}]*\}/g;
+  const matches = jsonText.match(questionRegex);
+  if (matches && matches.length > 0) {
+    const reconstructed = `{"questions":[${matches.join(",")}]}`;
+    try {
+      const parsed = JSON.parse(reconstructed) as { questions: QuizQuestion[] };
+      return parsed.questions;
+    } catch {
+      // ignore
+    }
+  }
+
+  // Last resort: try trimming at the last complete }
+  for (let i = jsonText.length - 1; i >= 0; i--) {
+    if (jsonText[i] === "}") {
+      const candidate = jsonText.substring(startIdx, i + 1);
       try {
-        const parsed = JSON.parse(trimmed) as { questions: QuizQuestion[] };
+        const parsed = JSON.parse(candidate) as { questions: QuizQuestion[] };
         return parsed.questions;
       } catch {
-        // ignore
+        continue;
       }
     }
-    throw new Error("Failed to parse quiz response JSON");
   }
+
+  throw new Error("Failed to parse quiz response JSON");
 }
 
 async function generateBatch(
@@ -62,10 +84,11 @@ async function generateBatch(
     })
     .join("\n\n");
 
-  // Build compact list of already-asked questions
+  // Build compact list of already-asked questions (last 50 to keep prompt size manageable)
   let previousContext = "";
   if (previousQuestions.length > 0) {
-    previousContext = `\n\n【重要】以下はすでに出題済みの質問です。同じ・類似の質問は絶対に避けてください:\n${previousQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}`;
+    const recentQuestions = previousQuestions.slice(-50);
+    previousContext = `\n\n【重要】以下はすでに出題済みの質問です（${previousQuestions.length}問中直近${recentQuestions.length}問）。同じ・類似の質問は絶対に避けてください:\n${recentQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}`;
   }
 
   const prompt = `あなたは日本のトレンドクイズ作成者です。
