@@ -23,45 +23,41 @@ function parseQuizResponse(text: string): QuizQuestion[] {
     jsonText = jsonText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
   }
 
-  // Try direct parse first
   try {
     const parsed = JSON.parse(jsonText) as { questions: QuizQuestion[] };
     return parsed.questions;
   } catch {
-    // ignore, try recovery below
-  }
-
-  // Try to extract valid JSON by finding matched braces
-  const startIdx = jsonText.indexOf("{");
-  if (startIdx < 0) throw new Error("No JSON found in response");
-
-  // Find all complete question objects using regex
-  const questionRegex = /\{[^{}]*"id"\s*:\s*\d+[^{}]*"question"\s*:[^{}]*"choices"\s*:\s*\[[^\]]*\][^{}]*\}/g;
-  const matches = jsonText.match(questionRegex);
-  if (matches && matches.length > 0) {
-    const reconstructed = `{"questions":[${matches.join(",")}]}`;
-    try {
-      const parsed = JSON.parse(reconstructed) as { questions: QuizQuestion[] };
-      return parsed.questions;
-    } catch {
-      // ignore
-    }
-  }
-
-  // Last resort: try trimming at the last complete }
-  for (let i = jsonText.length - 1; i >= 0; i--) {
-    if (jsonText[i] === "}") {
-      const candidate = jsonText.substring(startIdx, i + 1);
-      try {
-        const parsed = JSON.parse(candidate) as { questions: QuizQuestion[] };
-        return parsed.questions;
-      } catch {
-        continue;
+    // Try to find valid JSON object
+    const startIdx = jsonText.indexOf("{");
+    if (startIdx >= 0) {
+      for (let i = jsonText.length - 1; i >= startIdx; i--) {
+        if (jsonText[i] === "}") {
+          try {
+            const parsed = JSON.parse(jsonText.substring(startIdx, i + 1)) as { questions: QuizQuestion[] };
+            return parsed.questions;
+          } catch {
+            continue;
+          }
+        }
       }
     }
+    throw new Error("Failed to parse quiz response JSON");
   }
+}
 
-  throw new Error("Failed to parse quiz response JSON");
+// Attach source URLs from trend data based on trendKeyword match
+function attachSourceUrls(
+  questions: QuizQuestion[],
+  trends: TrendItem[]
+): QuizQuestion[] {
+  return questions.map((q) => {
+    const trend = trends.find((t) => t.title === q.trendKeyword);
+    if (trend && trend.newsItems.length > 0) {
+      const news = trend.newsItems[0];
+      return { ...q, sourceUrl: news.url, sourceTitle: news.title };
+    }
+    return q;
+  });
 }
 
 async function generateBatch(
@@ -78,17 +74,17 @@ async function generateBatch(
     .map((t, i) => {
       const newsContext =
         t.newsItems.length > 0
-          ? t.newsItems.map((n) => `  - ${n.title} (${n.source}) [${n.url}]`).join("\n")
+          ? t.newsItems.map((n) => `  - ${n.title} (${n.source})`).join("\n")
           : "  - 関連ニュースなし";
       return `${i + 1}. キーワード: ${t.title}\n  検索ボリューム: ${t.approxTraffic}\n  関連ニュース:\n${newsContext}`;
     })
     .join("\n\n");
 
-  // Build compact list of already-asked questions (last 50 to keep prompt size manageable)
+  // Build compact list of already-asked questions (last 50)
   let previousContext = "";
   if (previousQuestions.length > 0) {
-    const recentQuestions = previousQuestions.slice(-50);
-    previousContext = `\n\n【重要】以下はすでに出題済みの質問です（${previousQuestions.length}問中直近${recentQuestions.length}問）。同じ・類似の質問は絶対に避けてください:\n${recentQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}`;
+    const recent = previousQuestions.slice(-50);
+    previousContext = `\n\n【重要】以下はすでに出題済みです。同じ・類似の質問は避けてください:\n${recent.map((q, i) => `${i + 1}. ${q}`).join("\n")}`;
   }
 
   const prompt = `あなたは日本のトレンドクイズ作成者です。
@@ -105,9 +101,7 @@ ${trendContext}${previousContext}
       "question": "クイズの質問文",
       "choices": ["選択肢A", "選択肢B", "選択肢C", "選択肢D"],
       "correctIndex": 0,
-      "explanation": "正解の解説",
-      "sourceUrl": "参考にしたニュースのURL",
-      "sourceTitle": "参考にしたニュースのタイトル"
+      "explanation": "正解の解説"
     }
   ]
 }
@@ -120,12 +114,11 @@ ${trendContext}${previousContext}
 - 解説は簡潔で分かりやすいこと
 - 必ず${questionsPerBatch}問作成すること
 - idは${startId}から連番にすること
-- sourceUrlとsourceTitleには、その問題の元となったニュース記事のURLとタイトルを入れること
 - すでに出題済みの問題と同じ内容・同じ質問文は絶対に作らないこと`;
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
-    max_tokens: 16384,
+    max_tokens: 8192,
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -174,8 +167,11 @@ export async function generateQuiz(
     }
   }
 
+  // Attach source URLs from trend data
+  const withSources = attachSourceUrls(allQuestions, trends);
+
   // Renumber all questions sequentially
-  const numberedQuestions = allQuestions.map((q, i) => ({ ...q, id: i + 1 }));
+  const numberedQuestions = withSources.map((q, i) => ({ ...q, id: i + 1 }));
 
   return {
     date: today,
