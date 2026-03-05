@@ -39,7 +39,7 @@ async function generateBatch(
     .map((t, i) => {
       const newsContext =
         t.newsItems.length > 0
-          ? t.newsItems.map((n) => `  - ${n.title} (${n.source})`).join("\n")
+          ? t.newsItems.map((n) => `  - ${n.title} (${n.source}) [${n.url}]`).join("\n")
           : "  - 関連ニュースなし";
       return `${i + 1}. キーワード: ${t.title}\n  検索ボリューム: ${t.approxTraffic}\n  関連ニュース:\n${newsContext}`;
     })
@@ -60,7 +60,9 @@ ${trendContext}
       "question": "クイズの質問文",
       "choices": ["選択肢A", "選択肢B", "選択肢C", "選択肢D"],
       "correctIndex": 0,
-      "explanation": "正解の解説"
+      "explanation": "正解の解説",
+      "sourceUrl": "参考にしたニュースのURL",
+      "sourceTitle": "参考にしたニュースのタイトル"
     }
   ]
 }
@@ -72,7 +74,8 @@ ${trendContext}
 - 不正解の選択肢もそれらしいものにすること
 - 解説は簡潔で分かりやすいこと
 - 必ず${questionsPerBatch}問作成すること
-- idは${startId}から連番にすること`;
+- idは${startId}から連番にすること
+- sourceUrlとsourceTitleには、その問題の元となったニュース記事のURLとタイトルを入れること`;
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",

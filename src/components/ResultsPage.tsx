@@ -77,30 +77,28 @@ export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPa
                   {q.question}
                 </p>
               </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs">
-                  {isCorrect ? (
-                    <span className="text-neutral-600">{q.choices[q.correctIndex]}</span>
-                  ) : (
-                    <>
-                      <span className="text-neutral-400 line-through mr-2">
-                        {q.choices[answers[i]!]}
-                      </span>
-                      <span className="text-neutral-700 font-medium">
-                        {q.choices[q.correctIndex]}
-                      </span>
-                    </>
-                  )}
-                </p>
-                <a
-                  href={`https://x.com/search?q=${encodeURIComponent(q.trendKeyword)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0 ml-2 text-[11px] text-neutral-400 hover:text-black transition-colors underline underline-offset-2"
-                >
-                  #{q.trendKeyword}
-                </a>
-              </div>
+              <p className="text-xs mb-1">
+                {isCorrect ? (
+                  <span className="text-neutral-600">{q.choices[q.correctIndex]}</span>
+                ) : (
+                  <>
+                    <span className="text-neutral-400 line-through mr-2">
+                      {q.choices[answers[i]!]}
+                    </span>
+                    <span className="text-neutral-700 font-medium">
+                      {q.choices[q.correctIndex]}
+                    </span>
+                  </>
+                )}
+              </p>
+              <a
+                href={q.sourceUrl || `https://x.com/search?q=${encodeURIComponent(q.trendKeyword)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-[11px] text-neutral-400 hover:text-black transition-colors underline underline-offset-2 truncate max-w-full"
+              >
+                {q.sourceTitle || `#${q.trendKeyword}`}
+              </a>
             </div>
           );
         })}

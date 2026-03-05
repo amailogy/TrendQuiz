@@ -19,6 +19,8 @@ export interface QuizQuestion {
   choices: string[];
   correctIndex: number;
   explanation: string;
+  sourceUrl?: string;
+  sourceTitle?: string;
 }
 
 export interface DailyQuiz {
