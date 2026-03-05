@@ -71,24 +71,36 @@ export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPa
                   : "border-l-neutral-300 bg-neutral-50"
               }`}
             >
-              <p className="font-medium text-neutral-700 mb-1">
-                <span className="text-neutral-400 mr-1">Q{q.id}.</span>
-                {q.question}
-              </p>
-              <p className="text-xs">
-                {isCorrect ? (
-                  <span className="text-neutral-600">{q.choices[q.correctIndex]}</span>
-                ) : (
-                  <>
-                    <span className="text-neutral-400 line-through mr-2">
-                      {q.choices[answers[i]!]}
-                    </span>
-                    <span className="text-neutral-700 font-medium">
-                      {q.choices[q.correctIndex]}
-                    </span>
-                  </>
-                )}
-              </p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="font-medium text-neutral-700">
+                  <span className="text-neutral-400 mr-1">Q{q.id}.</span>
+                  {q.question}
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-xs">
+                  {isCorrect ? (
+                    <span className="text-neutral-600">{q.choices[q.correctIndex]}</span>
+                  ) : (
+                    <>
+                      <span className="text-neutral-400 line-through mr-2">
+                        {q.choices[answers[i]!]}
+                      </span>
+                      <span className="text-neutral-700 font-medium">
+                        {q.choices[q.correctIndex]}
+                      </span>
+                    </>
+                  )}
+                </p>
+                <a
+                  href={`https://x.com/search?q=${encodeURIComponent(q.trendKeyword)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-shrink-0 ml-2 text-[11px] text-neutral-400 hover:text-black transition-colors underline underline-offset-2"
+                >
+                  #{q.trendKeyword}
+                </a>
+              </div>
             </div>
           );
         })}
