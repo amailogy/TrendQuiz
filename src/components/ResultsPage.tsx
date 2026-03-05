@@ -24,8 +24,12 @@ export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPa
   const result = getScoreRank(score, total);
   const accuracy = Math.round((score / total) * 100);
 
+  const gaugeLength = 10;
+  const filled = Math.round((score / total) * gaugeLength);
+  const gauge = "\u2588".repeat(filled) + "\u2591".repeat(gaugeLength - filled);
+
   const shareText = encodeURIComponent(
-    `トレンドクイズ ${score}/${total} 問正解 (ランク${result.rank}) #トレンドクイズ`
+    `\u300Eトレンドクイズ\u300F\n\n${gauge} ${score}/${total}\n\nランク: ${result.rank}\u3000${result.text}\n\n#トレンドクイズ`
   );
 
   return (
