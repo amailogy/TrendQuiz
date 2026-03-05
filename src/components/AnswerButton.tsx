@@ -20,38 +20,47 @@ export function AnswerButton({
   onClick,
 }: AnswerButtonProps) {
   let className =
-    "w-full text-left p-4 rounded-xl border-2 transition-all duration-300 flex items-start gap-3 ";
+    "w-full text-left p-4 rounded-xl border transition-all duration-300 flex items-start gap-3 ";
 
   if (isRevealed) {
     if (isCorrect) {
-      className += "border-green-500 bg-green-50 text-green-800";
+      className +=
+        "border-emerald-500/50 bg-emerald-500/10 text-emerald-300";
     } else if (isSelected) {
-      className += "border-red-500 bg-red-50 text-red-800";
+      className +=
+        "border-red-500/50 bg-red-500/10 text-red-300";
     } else {
-      className += "border-gray-200 bg-gray-50 text-gray-400";
+      className +=
+        "border-white/5 bg-white/[0.02] text-slate-600";
     }
   } else {
     className +=
-      "border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 cursor-pointer active:scale-[0.98]";
+      "border-white/10 bg-white/[0.03] text-slate-200 hover:border-blue-400/40 hover:bg-white/[0.06] cursor-pointer active:scale-[0.98]";
   }
 
   return (
     <button onClick={onClick} disabled={isRevealed} className={className}>
       <span
-        className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-bold flex-shrink-0 ${
+        className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold flex-shrink-0 ${
           isRevealed && isCorrect
-            ? "bg-green-500 text-white"
+            ? "bg-emerald-500 text-white"
             : isRevealed && isSelected
               ? "bg-red-500 text-white"
-              : "bg-gray-100 text-gray-600"
+              : "bg-white/10 text-slate-400"
         }`}
       >
         {prefixes[index]}
       </span>
       <span className="font-medium leading-relaxed">{label}</span>
-      {isRevealed && isCorrect && <span className="ml-auto text-xl">&#10003;</span>}
+      {isRevealed && isCorrect && (
+        <span className="ml-auto text-sm font-bold text-emerald-400 tracking-wide">
+          CORRECT
+        </span>
+      )}
       {isRevealed && isSelected && !isCorrect && (
-        <span className="ml-auto text-xl">&#10007;</span>
+        <span className="ml-auto text-sm font-bold text-red-400 tracking-wide">
+          WRONG
+        </span>
       )}
     </button>
   );

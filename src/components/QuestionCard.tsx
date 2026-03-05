@@ -19,12 +19,12 @@ export function QuestionCard({
   return (
     <div className="animate-fadeIn">
       <div className="mb-4">
-        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+        <span className="inline-block px-3 py-1 rounded-lg text-xs font-semibold bg-blue-500/15 text-blue-400 border border-blue-500/20">
           #{question.trendKeyword}
         </span>
       </div>
 
-      <h2 className="text-lg font-bold text-gray-800 mb-6 leading-relaxed">
+      <h2 className="text-lg font-bold text-slate-100 mb-6 leading-relaxed">
         Q{question.id}. {question.question}
       </h2>
 
@@ -44,18 +44,18 @@ export function QuestionCard({
 
       {showResult && (
         <div
-          className={`mt-4 p-4 rounded-xl text-sm leading-relaxed ${
+          className={`mt-4 p-4 rounded-xl text-sm leading-relaxed border ${
             selectedAnswer === question.correctIndex
-              ? "bg-green-50 border border-green-200 text-green-800"
-              : "bg-red-50 border border-red-200 text-red-800"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
+              : "bg-red-500/10 border-red-500/20 text-red-300"
           }`}
         >
           <p className="font-bold mb-1">
             {selectedAnswer === question.correctIndex
-              ? "正解!"
-              : "不正解..."}
+              ? "Correct!"
+              : "Incorrect..."}
           </p>
-          <p>{question.explanation}</p>
+          <p className="text-slate-400">{question.explanation}</p>
         </div>
       )}
     </div>

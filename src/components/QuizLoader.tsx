@@ -30,10 +30,10 @@ export function QuizLoader() {
 
   if (loading) {
     return (
-      <div className="text-center py-16">
-        <div className="inline-block w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-        <p className="text-gray-500 mt-4 text-sm">
-          クイズを読み込んでいます...
+      <div className="text-center py-20">
+        <div className="inline-block w-10 h-10 border-2 border-white/10 border-t-blue-400 rounded-full animate-spin" />
+        <p className="text-slate-500 mt-5 text-sm tracking-wide">
+          Loading quiz...
         </p>
       </div>
     );
@@ -41,16 +41,18 @@ export function QuizLoader() {
 
   if (error || !quiz) {
     return (
-      <div className="text-center py-16">
-        <div className="text-5xl mb-4">{"\u{23F3}"}</div>
-        <h2 className="text-xl font-bold text-gray-700 mb-2">
-          本日のクイズを準備中です
-        </h2>
-        <p className="text-gray-500 text-sm">
-          毎日0時に新しいクイズが生成されます。
-          <br />
-          しばらくお待ちください。
-        </p>
+      <div className="text-center py-20">
+        <div className="glass rounded-2xl p-10 glow">
+          <div className="text-4xl font-black text-accent mb-3">---</div>
+          <h2 className="text-lg font-bold text-slate-200 mb-2">
+            Preparing Today&apos;s Quiz
+          </h2>
+          <p className="text-slate-500 text-sm leading-relaxed">
+            Every day at midnight, a new quiz is generated.
+            <br />
+            Please check back shortly.
+          </p>
+        </div>
       </div>
     );
   }

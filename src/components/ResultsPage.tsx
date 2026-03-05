@@ -10,92 +10,113 @@ interface ResultsPageProps {
   onBack?: () => void;
 }
 
-function getScoreMessage(score: number, total: number) {
+function getScoreRank(score: number, total: number) {
   const ratio = score / total;
-  if (ratio === 1) return { text: "パーフェクト! すごい!", emoji: "crown" };
-  if (ratio >= 0.8) return { text: "素晴らしい!", emoji: "star" };
-  if (ratio >= 0.6) return { text: "なかなかの成績!", emoji: "thumbsup" };
-  if (ratio >= 0.4) return { text: "まずまず!", emoji: "muscle" };
-  return { text: "次回はがんばろう!", emoji: "fire" };
+  if (ratio === 1) return { rank: "S", text: "Perfect!", color: "from-yellow-400 to-amber-500" };
+  if (ratio >= 0.8) return { rank: "A", text: "Excellent!", color: "from-blue-400 to-cyan-400" };
+  if (ratio >= 0.6) return { rank: "B", text: "Great job!", color: "from-emerald-400 to-green-400" };
+  if (ratio >= 0.4) return { rank: "C", text: "Not bad!", color: "from-purple-400 to-violet-400" };
+  return { rank: "D", text: "Keep trying!", color: "from-slate-400 to-slate-500" };
 }
 
 export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPageProps) {
   const total = quiz.questions.length;
-  const message = getScoreMessage(score, total);
+  const result = getScoreRank(score, total);
+  const accuracy = Math.round((score / total) * 100);
 
   const shareText = encodeURIComponent(
-    `トレンドクイズ${total}問モードで ${score}/${total} 問正解しました! #トレンドクイズ`
+    `TREND QUIZ: Scored ${score}/${total} (Rank ${result.rank}) #TrendQuiz`
   );
 
   return (
-    <div className="animate-fadeIn">
+    <div className="animate-slideUp">
+      {/* Score Section */}
       <div className="text-center mb-8">
-        <div className="text-6xl mb-4">
-          {message.emoji === "crown" && "\u{1F451}"}
-          {message.emoji === "star" && "\u{2B50}"}
-          {message.emoji === "thumbsup" && "\u{1F44D}"}
-          {message.emoji === "muscle" && "\u{1F4AA}"}
-          {message.emoji === "fire" && "\u{1F525}"}
-        </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          {message.text}
-        </h2>
-        <p className="text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          {score} / {total}
+        <p className="text-sm text-slate-500 uppercase tracking-[0.2em] mb-4">
+          Your Result
         </p>
+        <div
+          className={`text-8xl font-black bg-gradient-to-br ${result.color} bg-clip-text text-transparent leading-none mb-2`}
+        >
+          {result.rank}
+        </div>
+        <p className="text-slate-300 text-lg font-medium mb-4">
+          {result.text}
+        </p>
+        <div className="flex items-center justify-center gap-6 text-sm">
+          <div>
+            <span className="text-3xl font-black text-accent">{score}</span>
+            <span className="text-slate-500 ml-1">/ {total}</span>
+          </div>
+          <div className="h-8 w-px bg-white/10" />
+          <div>
+            <span className="text-3xl font-black text-slate-200">{accuracy}</span>
+            <span className="text-slate-500 ml-1">%</span>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-3 mb-8 max-h-96 overflow-y-auto">
+      {/* Answer Review */}
+      <div className="space-y-2 mb-8 max-h-96 overflow-y-auto pr-1">
         {quiz.questions.map((q, i) => {
           const isCorrect = answers[i] === q.correctIndex;
           return (
             <div
               key={q.id}
-              className={`p-3 rounded-lg border text-sm ${
+              className={`p-3 rounded-lg text-sm border-l-[3px] ${
                 isCorrect
-                  ? "border-green-200 bg-green-50"
-                  : "border-red-200 bg-red-50"
+                  ? "border-l-emerald-500 bg-emerald-500/5"
+                  : "border-l-red-500 bg-red-500/5"
               }`}
             >
-              <div className="flex items-start gap-2">
-                <span className="text-lg">{isCorrect ? "\u2705" : "\u274C"}</span>
-                <div>
-                  <p className="font-medium text-gray-800">
-                    Q{q.id}. {q.question}
-                  </p>
-                  <p className="text-gray-600 mt-1">
-                    {isCorrect
-                      ? `\u2192 ${q.choices[q.correctIndex]}`
-                      : `\u00D7 ${q.choices[answers[i]!]} \u2192 \u25CB ${q.choices[q.correctIndex]}`}
-                  </p>
-                </div>
-              </div>
+              <p className="font-medium text-slate-200 mb-1">
+                <span className="text-slate-500 mr-1">Q{q.id}.</span>
+                {q.question}
+              </p>
+              <p className="text-slate-500 text-xs">
+                {isCorrect ? (
+                  <span className="text-emerald-400">{q.choices[q.correctIndex]}</span>
+                ) : (
+                  <>
+                    <span className="text-red-400 line-through mr-2">
+                      {q.choices[answers[i]!]}
+                    </span>
+                    <span className="text-emerald-400">
+                      {q.choices[q.correctIndex]}
+                    </span>
+                  </>
+                )}
+              </p>
             </div>
           );
         })}
       </div>
 
+      {/* Actions */}
       <div className="flex flex-col gap-3">
         <a
           href={`https://twitter.com/intent/tweet?text=${shareText}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full py-3 px-4 rounded-xl bg-black text-white font-bold text-center hover:bg-gray-800 transition-colors"
+          className="w-full py-3 px-4 rounded-xl font-bold text-center transition-all duration-300 active:scale-[0.98] text-white"
+          style={{
+            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+          }}
         >
-          X(Twitter)で共有する
+          Share on X
         </a>
         <button
           onClick={onRetry}
-          className="w-full py-3 px-4 rounded-xl border-2 border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-colors"
+          className="w-full py-3 px-4 rounded-xl border border-white/10 text-slate-300 font-bold hover:bg-white/5 transition-colors"
         >
-          もう一度挑戦する
+          Try Again
         </button>
         {onBack && (
           <button
             onClick={onBack}
-            className="w-full py-3 px-4 rounded-xl text-gray-400 font-medium hover:text-gray-600 transition-colors"
+            className="w-full py-3 px-4 rounded-xl text-slate-600 font-medium hover:text-slate-400 transition-colors"
           >
-            モード選択に戻る
+            Back
           </button>
         )}
       </div>

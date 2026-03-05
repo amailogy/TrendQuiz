@@ -105,35 +105,38 @@ export function Quiz({ quiz, onBack }: QuizProps) {
   // Checkpoint screen
   if (showCheckpoint) {
     const answered = state.currentQuestionIndex;
+    const accuracy = Math.round((state.score / answered) * 100);
     return (
       <div className="animate-fadeIn text-center">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <div className="text-4xl mb-4">{"\u{1F3C3}"}</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">
-            {answered}問 完了！
-          </h2>
-          <p className="text-gray-500 mb-2">
-            現在のスコア:{" "}
-            <span className="font-bold text-blue-600">
-              {state.score} / {answered}
-            </span>
+        <div className="glass rounded-2xl p-8 glow">
+          <p className="text-sm text-slate-500 uppercase tracking-widest mb-2">
+            Checkpoint
           </p>
-          <p className="text-gray-400 text-sm mb-6">
-            残り {total - answered} 問
+          <div className="text-5xl font-black text-accent mb-2">
+            {state.score}/{answered}
+          </div>
+          <p className="text-slate-400 text-sm mb-1">
+            Accuracy: {accuracy}%
+          </p>
+          <p className="text-slate-600 text-xs mb-8">
+            {total - answered} questions remaining
           </p>
 
           <div className="flex flex-col gap-3">
             <button
               onClick={handleContinue}
-              className="w-full py-3 px-4 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors active:scale-[0.98]"
+              className="w-full py-3 px-4 rounded-xl font-bold transition-all duration-300 active:scale-[0.98] text-white"
+              style={{
+                background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+              }}
             >
-              続ける
+              Continue
             </button>
             <button
               onClick={handleFinishEarly}
-              className="w-full py-3 px-4 rounded-xl border-2 border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-colors"
+              className="w-full py-3 px-4 rounded-xl border border-white/10 text-slate-400 font-bold hover:bg-white/5 transition-colors"
             >
-              ここで終了して結果を見る
+              Finish &amp; View Results
             </button>
           </div>
         </div>
@@ -145,7 +148,7 @@ export function Quiz({ quiz, onBack }: QuizProps) {
     <div>
       <ProgressBar current={state.currentQuestionIndex} total={total} />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <div className="glass rounded-2xl p-6 glow">
         <QuestionCard
           question={currentQuestion}
           selectedAnswer={state.answers[state.currentQuestionIndex]}
@@ -156,11 +159,14 @@ export function Quiz({ quiz, onBack }: QuizProps) {
         {state.showResult && (
           <button
             onClick={handleNext}
-            className="w-full mt-6 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors active:scale-[0.98]"
+            className="w-full mt-6 py-3 px-4 rounded-xl font-bold transition-all duration-300 active:scale-[0.98] text-white"
+            style={{
+              background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+            }}
           >
             {state.currentQuestionIndex < total - 1
-              ? "次の問題へ"
-              : "結果を見る"}
+              ? "Next Question"
+              : "View Results"}
           </button>
         )}
       </div>
