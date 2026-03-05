@@ -7,6 +7,7 @@ interface ResultsPageProps {
   answers: (number | null)[];
   score: number;
   onRetry: () => void;
+  onBack?: () => void;
 }
 
 function getScoreMessage(score: number, total: number) {
@@ -18,12 +19,12 @@ function getScoreMessage(score: number, total: number) {
   return { text: "次回はがんばろう!", emoji: "fire" };
 }
 
-export function ResultsPage({ quiz, answers, score, onRetry }: ResultsPageProps) {
+export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPageProps) {
   const total = quiz.questions.length;
   const message = getScoreMessage(score, total);
 
   const shareText = encodeURIComponent(
-    `トレンドクイズで ${score}/${total} 問正解しました! #トレンドクイズ`
+    `トレンドクイズ${total}問モードで ${score}/${total} 問正解しました! #トレンドクイズ`
   );
 
   return (
@@ -44,7 +45,7 @@ export function ResultsPage({ quiz, answers, score, onRetry }: ResultsPageProps)
         </p>
       </div>
 
-      <div className="space-y-3 mb-8">
+      <div className="space-y-3 mb-8 max-h-96 overflow-y-auto">
         {quiz.questions.map((q, i) => {
           const isCorrect = answers[i] === q.correctIndex;
           return (
@@ -89,6 +90,14 @@ export function ResultsPage({ quiz, answers, score, onRetry }: ResultsPageProps)
         >
           もう一度挑戦する
         </button>
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="w-full py-3 px-4 rounded-xl text-gray-400 font-medium hover:text-gray-600 transition-colors"
+          >
+            モード選択に戻る
+          </button>
+        )}
       </div>
     </div>
   );

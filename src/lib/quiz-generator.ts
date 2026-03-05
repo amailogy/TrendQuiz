@@ -2,12 +2,40 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { TrendItem, DailyQuiz, QuizQuestion } from "@/types/quiz";
 import { getTodayJST } from "./utils";
 
-export async function generateQuiz(trends: TrendItem[]): Promise<DailyQuiz> {
-  const client = new Anthropic();
-  const today = getTodayJST();
-  const selectedTrends = trends.slice(0, 5);
+const QUESTIONS_PER_BATCH = 10;
+const TOTAL_QUESTIONS = 100;
 
-  const trendContext = selectedTrends
+function shuffleChoices(q: QuizQuestion): QuizQuestion {
+  const correctAnswer = q.choices[q.correctIndex];
+  const indices = [0, 1, 2, 3];
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  const shuffledChoices = indices.map((i) => q.choices[i]);
+  const newCorrectIndex = shuffledChoices.indexOf(correctAnswer);
+  return { ...q, choices: shuffledChoices, correctIndex: newCorrectIndex };
+}
+
+function parseQuizResponse(text: string): QuizQuestion[] {
+  let jsonText = text.trim();
+  if (jsonText.startsWith("```")) {
+    jsonText = jsonText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+  }
+  const parsed = JSON.parse(jsonText) as { questions: QuizQuestion[] };
+  return parsed.questions;
+}
+
+async function generateBatch(
+  client: Anthropic,
+  trends: TrendItem[],
+  batchIndex: number,
+  questionsPerBatch: number,
+  today: string
+): Promise<QuizQuestion[]> {
+  const startId = batchIndex * questionsPerBatch + 1;
+
+  const trendContext = trends
     .map((t, i) => {
       const newsContext =
         t.newsItems.length > 0
@@ -18,7 +46,8 @@ export async function generateQuiz(trends: TrendItem[]): Promise<DailyQuiz> {
     .join("\n\n");
 
   const prompt = `あなたは日本のトレンドクイズ作成者です。
-以下の本日(${today})のトレンドキーワードと関連ニュースに基づいて、4択クイズを5問作成してください。
+以下の本日(${today})のトレンドキーワードと関連ニュースに基づいて、4択クイズを${questionsPerBatch}問作成してください。
+これはバッチ${batchIndex + 1}です。前のバッチと異なる切り口・視点の問題を作ってください。
 
 ${trendContext}
 
@@ -26,7 +55,7 @@ ${trendContext}
 {
   "questions": [
     {
-      "id": 1,
+      "id": ${startId},
       "trendKeyword": "トレンドキーワード",
       "question": "クイズの質問文",
       "choices": ["選択肢A", "選択肢B", "選択肢C", "選択肢D"],
@@ -37,16 +66,17 @@ ${trendContext}
 }
 
 ルール:
-- 各質問は対応するトレンドキーワードと関連ニュースに基づくこと
+- 各トレンドキーワードから複数の異なる角度で出題すること
 - 質問は日本語で作成すること
 - 4つの選択肢のうち1つだけが正解であること
 - 不正解の選択肢もそれらしいものにすること
 - 解説は簡潔で分かりやすいこと
-- 必ず5問作成すること`;
+- 必ず${questionsPerBatch}問作成すること
+- idは${startId}から連番にすること`;
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
-    max_tokens: 4096,
+    max_tokens: 8192,
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -55,30 +85,40 @@ ${trendContext}
     throw new Error("Unexpected response type from Claude API");
   }
 
-  // Strip markdown code fences if present
-  let jsonText = content.text.trim();
-  if (jsonText.startsWith("```")) {
-    jsonText = jsonText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+  const questions = parseQuizResponse(content.text);
+  return questions.map((q, i) => shuffleChoices({ ...q, id: startId + i }));
+}
+
+export async function generateQuiz(
+  trends: TrendItem[]
+): Promise<DailyQuiz> {
+  const client = new Anthropic();
+  const today = getTodayJST();
+  const totalBatches = Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_BATCH);
+
+  const allQuestions: QuizQuestion[] = [];
+
+  // Generate batches in parallel (2 at a time to avoid rate limits)
+  const concurrency = 2;
+  for (let i = 0; i < totalBatches; i += concurrency) {
+    const batchPromises = [];
+    for (let j = i; j < Math.min(i + concurrency, totalBatches); j++) {
+      batchPromises.push(
+        generateBatch(client, trends, j, QUESTIONS_PER_BATCH, today)
+      );
+    }
+    const results = await Promise.all(batchPromises);
+    for (const batch of results) {
+      allQuestions.push(...batch);
+    }
   }
 
-  const parsed = JSON.parse(jsonText) as { questions: QuizQuestion[] };
-
-  // Shuffle choices so the correct answer isn't always A
-  const shuffledQuestions = parsed.questions.map((q) => {
-    const correctAnswer = q.choices[q.correctIndex];
-    const indices = [0, 1, 2, 3];
-    for (let i = indices.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [indices[i], indices[j]] = [indices[j], indices[i]];
-    }
-    const shuffledChoices = indices.map((i) => q.choices[i]);
-    const newCorrectIndex = shuffledChoices.indexOf(correctAnswer);
-    return { ...q, choices: shuffledChoices, correctIndex: newCorrectIndex };
-  });
+  // Renumber all questions sequentially
+  const numberedQuestions = allQuestions.map((q, i) => ({ ...q, id: i + 1 }));
 
   return {
     date: today,
     generatedAt: new Date().toISOString(),
-    questions: shuffledQuestions,
+    questions: numberedQuestions.slice(0, TOTAL_QUESTIONS),
   };
 }

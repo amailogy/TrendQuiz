@@ -13,8 +13,8 @@ export async function loadQuiz(date: string): Promise<DailyQuiz | null> {
   try {
     const getCached = unstable_cache(
       async () => generateQuizForDate(date),
-      [`quiz-v2-${date}`],
-      { revalidate: false, tags: [`quiz-v2-${date}`] }
+      [`quiz-v3-${date}`],
+      { revalidate: false, tags: [`quiz-v3-${date}`] }
     );
     return await getCached();
   } catch (error) {
