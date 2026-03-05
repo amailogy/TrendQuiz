@@ -12,11 +12,11 @@ interface ResultsPageProps {
 
 function getScoreRank(score: number, total: number) {
   const ratio = score / total;
-  if (ratio === 1) return { rank: "S", text: "Perfect!" };
-  if (ratio >= 0.8) return { rank: "A", text: "Excellent!" };
-  if (ratio >= 0.6) return { rank: "B", text: "Great job!" };
-  if (ratio >= 0.4) return { rank: "C", text: "Not bad!" };
-  return { rank: "D", text: "Keep trying!" };
+  if (ratio === 1) return { rank: "S", text: "パーフェクト!" };
+  if (ratio >= 0.8) return { rank: "A", text: "素晴らしい!" };
+  if (ratio >= 0.6) return { rank: "B", text: "なかなかの成績!" };
+  if (ratio >= 0.4) return { rank: "C", text: "まずまず!" };
+  return { rank: "D", text: "次回はがんばろう!" };
 }
 
 export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPageProps) {
@@ -25,7 +25,7 @@ export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPa
   const accuracy = Math.round((score / total) * 100);
 
   const shareText = encodeURIComponent(
-    `TREND QUIZ: Scored ${score}/${total} (Rank ${result.rank}) #TrendQuiz`
+    `トレンドクイズ ${score}/${total} 問正解 (ランク${result.rank}) #トレンドクイズ`
   );
 
   return (
@@ -33,7 +33,7 @@ export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPa
       {/* Score Section */}
       <div className="text-center mb-8">
         <p className="text-xs text-neutral-400 uppercase tracking-[0.2em] mb-4">
-          Your Result
+          結果発表
         </p>
         <div className="text-8xl font-black text-black leading-none mb-2">
           {result.rank}
@@ -98,20 +98,20 @@ export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPa
           rel="noopener noreferrer"
           className="w-full py-3 px-4 rounded-xl bg-black text-white font-bold text-center hover:bg-neutral-800 transition-colors active:scale-[0.98]"
         >
-          Share on X
+          Xで共有する
         </a>
         <button
           onClick={onRetry}
           className="w-full py-3 px-4 rounded-xl border border-neutral-200 text-neutral-600 font-bold hover:bg-neutral-50 transition-colors"
         >
-          Try Again
+          もう一度挑戦する
         </button>
         {onBack && (
           <button
             onClick={onBack}
             className="w-full py-3 px-4 rounded-xl text-neutral-400 font-medium hover:text-neutral-600 transition-colors"
           >
-            Back
+            戻る
           </button>
         )}
       </div>

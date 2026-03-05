@@ -7,7 +7,7 @@ export function Header() {
   return (
     <header className="text-center mb-4">
       <h1 className="text-2xl font-black text-black tracking-tight">
-        TREND QUIZ
+        トレンドクイズ
       </h1>
       <p className="text-neutral-400 text-xs tracking-widest mt-1">
         {year}.{month}.{day}

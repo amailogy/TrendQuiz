@@ -109,16 +109,16 @@ export function Quiz({ quiz, onBack }: QuizProps) {
       <div className="animate-fadeIn text-center">
         <div className="card rounded-2xl p-8">
           <p className="text-xs text-neutral-400 uppercase tracking-widest mb-3">
-            Checkpoint
+            チェックポイント
           </p>
           <div className="text-5xl font-black text-black mb-2">
             {state.score}/{answered}
           </div>
           <p className="text-neutral-500 text-sm mb-1">
-            Accuracy: {accuracy}%
+            正答率: {accuracy}%
           </p>
           <p className="text-neutral-400 text-xs mb-8">
-            {total - answered} questions remaining
+            残り {total - answered} 問
           </p>
 
           <div className="flex flex-col gap-3">
@@ -126,13 +126,13 @@ export function Quiz({ quiz, onBack }: QuizProps) {
               onClick={handleContinue}
               className="w-full py-3 px-4 rounded-xl bg-black text-white font-bold hover:bg-neutral-800 transition-colors active:scale-[0.98]"
             >
-              Continue
+              続ける
             </button>
             <button
               onClick={handleFinishEarly}
               className="w-full py-3 px-4 rounded-xl border border-neutral-200 text-neutral-500 font-bold hover:bg-neutral-50 transition-colors"
             >
-              Finish &amp; View Results
+              ここで終了して結果を見る
             </button>
           </div>
         </div>
@@ -158,8 +158,8 @@ export function Quiz({ quiz, onBack }: QuizProps) {
             className="w-full mt-4 py-2.5 px-4 rounded-xl bg-black text-white text-sm font-bold hover:bg-neutral-800 transition-colors active:scale-[0.98]"
           >
             {state.currentQuestionIndex < total - 1
-              ? "Next Question"
-              : "View Results"}
+              ? "次の問題へ"
+              : "結果を見る"}
           </button>
         )}
       </div>

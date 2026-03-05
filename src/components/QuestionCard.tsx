@@ -52,8 +52,8 @@ export function QuestionCard({
         >
           <p className="font-bold mb-0.5">
             {selectedAnswer === question.correctIndex
-              ? "Correct!"
-              : "Incorrect..."}
+              ? "正解!"
+              : "不正解..."}
           </p>
           <p className={selectedAnswer === question.correctIndex ? "text-neutral-400" : "text-neutral-500"}>
             {question.explanation}

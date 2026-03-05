@@ -33,7 +33,7 @@ export function QuizLoader() {
       <div className="text-center py-20">
         <div className="inline-block w-10 h-10 border-2 border-neutral-200 border-t-black rounded-full animate-spin" />
         <p className="text-neutral-400 mt-5 text-sm tracking-wide">
-          Loading...
+          読み込み中...
         </p>
       </div>
     );
@@ -45,12 +45,12 @@ export function QuizLoader() {
         <div className="card rounded-2xl p-10">
           <div className="text-4xl font-black text-black mb-3">---</div>
           <h2 className="text-lg font-bold text-neutral-700 mb-2">
-            Preparing Today&apos;s Quiz
+            本日のクイズを準備中です
           </h2>
           <p className="text-neutral-400 text-sm leading-relaxed">
-            Every day at midnight, a new quiz is generated.
+            毎日0時に新しいクイズが生成されます。
             <br />
-            Please check back shortly.
+            しばらくお待ちください。
           </p>
         </div>
       </div>
