@@ -7,6 +7,7 @@ export async function saveQuiz(quiz: DailyQuiz): Promise<void> {
     access: "public",
     contentType: "application/json",
     addRandomSuffix: false,
+    allowOverwrite: true,
   });
 }
 
