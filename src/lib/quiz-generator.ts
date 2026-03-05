@@ -31,7 +31,8 @@ async function generateBatch(
   trends: TrendItem[],
   batchIndex: number,
   questionsPerBatch: number,
-  today: string
+  today: string,
+  previousQuestions: QuizQuestion[]
 ): Promise<QuizQuestion[]> {
   const startId = batchIndex * questionsPerBatch + 1;
 
@@ -45,11 +46,19 @@ async function generateBatch(
     })
     .join("\n\n");
 
+  // Build list of already-asked questions to avoid duplicates
+  let previousContext = "";
+  if (previousQuestions.length > 0) {
+    const prevList = previousQuestions
+      .map((q) => `- [${q.trendKeyword}] ${q.question}`)
+      .join("\n");
+    previousContext = `\n\n【重要】以下の問題はすでに出題済みです。これらと同じ質問や似た質問は絶対に作らないでください。異なるトピック・切り口・観点で出題してください:\n${prevList}`;
+  }
+
   const prompt = `あなたは日本のトレンドクイズ作成者です。
 以下の本日(${today})のトレンドキーワードと関連ニュースに基づいて、4択クイズを${questionsPerBatch}問作成してください。
-これはバッチ${batchIndex + 1}です。前のバッチと異なる切り口・視点の問題を作ってください。
 
-${trendContext}
+${trendContext}${previousContext}
 
 以下のJSON形式で回答してください（JSONのみ、余分なテキストやマークダウンは不要）:
 {
@@ -75,7 +84,8 @@ ${trendContext}
 - 解説は簡潔で分かりやすいこと
 - 必ず${questionsPerBatch}問作成すること
 - idは${startId}から連番にすること
-- sourceUrlとsourceTitleには、その問題の元となったニュース記事のURLとタイトルを入れること`;
+- sourceUrlとsourceTitleには、その問題の元となったニュース記事のURLとタイトルを入れること
+- すでに出題済みの問題と同じ内容・同じ質問文は絶対に作らないこと`;
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
@@ -101,19 +111,17 @@ export async function generateQuiz(
 
   const allQuestions: QuizQuestion[] = [];
 
-  // Generate batches in parallel (2 at a time to avoid rate limits)
-  const concurrency = 2;
-  for (let i = 0; i < totalBatches; i += concurrency) {
-    const batchPromises = [];
-    for (let j = i; j < Math.min(i + concurrency, totalBatches); j++) {
-      batchPromises.push(
-        generateBatch(client, trends, j, QUESTIONS_PER_BATCH, today)
-      );
-    }
-    const results = await Promise.all(batchPromises);
-    for (const batch of results) {
-      allQuestions.push(...batch);
-    }
+  // Generate batches sequentially to pass previous questions for deduplication
+  for (let i = 0; i < totalBatches; i++) {
+    const batch = await generateBatch(
+      client,
+      trends,
+      i,
+      QUESTIONS_PER_BATCH,
+      today,
+      allQuestions
+    );
+    allQuestions.push(...batch);
   }
 
   // Renumber all questions sequentially
