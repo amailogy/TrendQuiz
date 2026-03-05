@@ -14,16 +14,19 @@ export async function GET(request: NextRequest) {
   }
 
   const today = getTodayJST();
+  const force = request.nextUrl.searchParams.get("force") === "1";
 
   try {
-    // Check if already generated
-    const existing = await loadQuiz(today);
-    if (existing) {
-      return NextResponse.json({
-        message: "Quiz already exists",
-        date: today,
-        questions: existing.questions.length,
-      });
+    // Check if already generated (skip if force)
+    if (!force) {
+      const existing = await loadQuiz(today);
+      if (existing) {
+        return NextResponse.json({
+          message: "Quiz already exists",
+          date: today,
+          questions: existing.questions.length,
+        });
+      }
     }
 
     // Generate new quiz
