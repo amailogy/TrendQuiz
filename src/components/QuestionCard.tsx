@@ -18,17 +18,17 @@ export function QuestionCard({
 }: QuestionCardProps) {
   return (
     <div className="animate-fadeIn">
-      <div className="mb-4">
-        <span className="inline-block px-3 py-1 rounded-lg text-xs font-semibold bg-blue-500/15 text-blue-400 border border-blue-500/20">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-neutral-100 text-neutral-500 border border-neutral-200">
           #{question.trendKeyword}
         </span>
       </div>
 
-      <h2 className="text-lg font-bold text-slate-100 mb-6 leading-relaxed">
+      <h2 className="text-[15px] font-bold text-black mb-4 leading-relaxed">
         Q{question.id}. {question.question}
       </h2>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {question.choices.map((choice, i) => (
           <AnswerButton
             key={i}
@@ -44,18 +44,20 @@ export function QuestionCard({
 
       {showResult && (
         <div
-          className={`mt-4 p-4 rounded-xl text-sm leading-relaxed border ${
+          className={`mt-3 p-3 rounded-lg text-xs leading-relaxed border ${
             selectedAnswer === question.correctIndex
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
-              : "bg-red-500/10 border-red-500/20 text-red-300"
+              ? "bg-neutral-900 border-neutral-800 text-white"
+              : "bg-neutral-100 border-neutral-200 text-neutral-600"
           }`}
         >
-          <p className="font-bold mb-1">
+          <p className="font-bold mb-0.5">
             {selectedAnswer === question.correctIndex
               ? "Correct!"
               : "Incorrect..."}
           </p>
-          <p className="text-slate-400">{question.explanation}</p>
+          <p className={selectedAnswer === question.correctIndex ? "text-neutral-400" : "text-neutral-500"}>
+            {question.explanation}
+          </p>
         </div>
       )}
     </div>

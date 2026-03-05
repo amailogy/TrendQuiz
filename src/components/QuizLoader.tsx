@@ -31,9 +31,9 @@ export function QuizLoader() {
   if (loading) {
     return (
       <div className="text-center py-20">
-        <div className="inline-block w-10 h-10 border-2 border-white/10 border-t-blue-400 rounded-full animate-spin" />
-        <p className="text-slate-500 mt-5 text-sm tracking-wide">
-          Loading quiz...
+        <div className="inline-block w-10 h-10 border-2 border-neutral-200 border-t-black rounded-full animate-spin" />
+        <p className="text-neutral-400 mt-5 text-sm tracking-wide">
+          Loading...
         </p>
       </div>
     );
@@ -42,12 +42,12 @@ export function QuizLoader() {
   if (error || !quiz) {
     return (
       <div className="text-center py-20">
-        <div className="glass rounded-2xl p-10 glow">
-          <div className="text-4xl font-black text-accent mb-3">---</div>
-          <h2 className="text-lg font-bold text-slate-200 mb-2">
+        <div className="card rounded-2xl p-10">
+          <div className="text-4xl font-black text-black mb-3">---</div>
+          <h2 className="text-lg font-bold text-neutral-700 mb-2">
             Preparing Today&apos;s Quiz
           </h2>
-          <p className="text-slate-500 text-sm leading-relaxed">
+          <p className="text-neutral-400 text-sm leading-relaxed">
             Every day at midnight, a new quiz is generated.
             <br />
             Please check back shortly.

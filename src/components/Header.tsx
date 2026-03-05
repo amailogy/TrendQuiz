@@ -5,17 +5,13 @@ export function Header() {
   const [year, month, day] = today.split("-");
 
   return (
-    <header className="text-center mb-10">
-      <h1 className="text-3xl font-bold text-accent tracking-tight">
+    <header className="text-center mb-4">
+      <h1 className="text-2xl font-black text-black tracking-tight">
         TREND QUIZ
       </h1>
-      <div className="mt-3 flex items-center justify-center gap-3">
-        <span className="h-px w-8 bg-white/20" />
-        <p className="text-slate-400 text-sm tracking-widest">
-          {year}.{month}.{day}
-        </p>
-        <span className="h-px w-8 bg-white/20" />
-      </div>
+      <p className="text-neutral-400 text-xs tracking-widest mt-1">
+        {year}.{month}.{day}
+      </p>
     </header>
   );
 }

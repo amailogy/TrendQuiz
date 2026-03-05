@@ -48,7 +48,6 @@ export function Quiz({ quiz, onBack }: QuizProps) {
       return;
     }
 
-    // Show checkpoint every 5 questions
     if (nextIndex % CHECKPOINT_INTERVAL === 0) {
       setState((prev) => ({
         ...prev,
@@ -108,33 +107,30 @@ export function Quiz({ quiz, onBack }: QuizProps) {
     const accuracy = Math.round((state.score / answered) * 100);
     return (
       <div className="animate-fadeIn text-center">
-        <div className="glass rounded-2xl p-8 glow">
-          <p className="text-sm text-slate-500 uppercase tracking-widest mb-2">
+        <div className="card rounded-2xl p-8">
+          <p className="text-xs text-neutral-400 uppercase tracking-widest mb-3">
             Checkpoint
           </p>
-          <div className="text-5xl font-black text-accent mb-2">
+          <div className="text-5xl font-black text-black mb-2">
             {state.score}/{answered}
           </div>
-          <p className="text-slate-400 text-sm mb-1">
+          <p className="text-neutral-500 text-sm mb-1">
             Accuracy: {accuracy}%
           </p>
-          <p className="text-slate-600 text-xs mb-8">
+          <p className="text-neutral-400 text-xs mb-8">
             {total - answered} questions remaining
           </p>
 
           <div className="flex flex-col gap-3">
             <button
               onClick={handleContinue}
-              className="w-full py-3 px-4 rounded-xl font-bold transition-all duration-300 active:scale-[0.98] text-white"
-              style={{
-                background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-              }}
+              className="w-full py-3 px-4 rounded-xl bg-black text-white font-bold hover:bg-neutral-800 transition-colors active:scale-[0.98]"
             >
               Continue
             </button>
             <button
               onClick={handleFinishEarly}
-              className="w-full py-3 px-4 rounded-xl border border-white/10 text-slate-400 font-bold hover:bg-white/5 transition-colors"
+              className="w-full py-3 px-4 rounded-xl border border-neutral-200 text-neutral-500 font-bold hover:bg-neutral-50 transition-colors"
             >
               Finish &amp; View Results
             </button>
@@ -148,7 +144,7 @@ export function Quiz({ quiz, onBack }: QuizProps) {
     <div>
       <ProgressBar current={state.currentQuestionIndex} total={total} />
 
-      <div className="glass rounded-2xl p-6 glow">
+      <div className="card rounded-2xl p-5">
         <QuestionCard
           question={currentQuestion}
           selectedAnswer={state.answers[state.currentQuestionIndex]}
@@ -159,10 +155,7 @@ export function Quiz({ quiz, onBack }: QuizProps) {
         {state.showResult && (
           <button
             onClick={handleNext}
-            className="w-full mt-6 py-3 px-4 rounded-xl font-bold transition-all duration-300 active:scale-[0.98] text-white"
-            style={{
-              background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-            }}
+            className="w-full mt-4 py-2.5 px-4 rounded-xl bg-black text-white text-sm font-bold hover:bg-neutral-800 transition-colors active:scale-[0.98]"
           >
             {state.currentQuestionIndex < total - 1
               ? "Next Question"

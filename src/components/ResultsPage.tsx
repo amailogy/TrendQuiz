@@ -12,11 +12,11 @@ interface ResultsPageProps {
 
 function getScoreRank(score: number, total: number) {
   const ratio = score / total;
-  if (ratio === 1) return { rank: "S", text: "Perfect!", color: "from-yellow-400 to-amber-500" };
-  if (ratio >= 0.8) return { rank: "A", text: "Excellent!", color: "from-blue-400 to-cyan-400" };
-  if (ratio >= 0.6) return { rank: "B", text: "Great job!", color: "from-emerald-400 to-green-400" };
-  if (ratio >= 0.4) return { rank: "C", text: "Not bad!", color: "from-purple-400 to-violet-400" };
-  return { rank: "D", text: "Keep trying!", color: "from-slate-400 to-slate-500" };
+  if (ratio === 1) return { rank: "S", text: "Perfect!" };
+  if (ratio >= 0.8) return { rank: "A", text: "Excellent!" };
+  if (ratio >= 0.6) return { rank: "B", text: "Great job!" };
+  if (ratio >= 0.4) return { rank: "C", text: "Not bad!" };
+  return { rank: "D", text: "Keep trying!" };
 }
 
 export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPageProps) {
@@ -32,26 +32,24 @@ export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPa
     <div className="animate-slideUp">
       {/* Score Section */}
       <div className="text-center mb-8">
-        <p className="text-sm text-slate-500 uppercase tracking-[0.2em] mb-4">
+        <p className="text-xs text-neutral-400 uppercase tracking-[0.2em] mb-4">
           Your Result
         </p>
-        <div
-          className={`text-8xl font-black bg-gradient-to-br ${result.color} bg-clip-text text-transparent leading-none mb-2`}
-        >
+        <div className="text-8xl font-black text-black leading-none mb-2">
           {result.rank}
         </div>
-        <p className="text-slate-300 text-lg font-medium mb-4">
+        <p className="text-neutral-500 text-lg font-medium mb-4">
           {result.text}
         </p>
         <div className="flex items-center justify-center gap-6 text-sm">
           <div>
-            <span className="text-3xl font-black text-accent">{score}</span>
-            <span className="text-slate-500 ml-1">/ {total}</span>
+            <span className="text-3xl font-black text-black">{score}</span>
+            <span className="text-neutral-400 ml-1">/ {total}</span>
           </div>
-          <div className="h-8 w-px bg-white/10" />
+          <div className="h-8 w-px bg-neutral-200" />
           <div>
-            <span className="text-3xl font-black text-slate-200">{accuracy}</span>
-            <span className="text-slate-500 ml-1">%</span>
+            <span className="text-3xl font-black text-black">{accuracy}</span>
+            <span className="text-neutral-400 ml-1">%</span>
           </div>
         </div>
       </div>
@@ -65,23 +63,23 @@ export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPa
               key={q.id}
               className={`p-3 rounded-lg text-sm border-l-[3px] ${
                 isCorrect
-                  ? "border-l-emerald-500 bg-emerald-500/5"
-                  : "border-l-red-500 bg-red-500/5"
+                  ? "border-l-neutral-800 bg-neutral-50"
+                  : "border-l-neutral-300 bg-neutral-50"
               }`}
             >
-              <p className="font-medium text-slate-200 mb-1">
-                <span className="text-slate-500 mr-1">Q{q.id}.</span>
+              <p className="font-medium text-neutral-700 mb-1">
+                <span className="text-neutral-400 mr-1">Q{q.id}.</span>
                 {q.question}
               </p>
-              <p className="text-slate-500 text-xs">
+              <p className="text-xs">
                 {isCorrect ? (
-                  <span className="text-emerald-400">{q.choices[q.correctIndex]}</span>
+                  <span className="text-neutral-600">{q.choices[q.correctIndex]}</span>
                 ) : (
                   <>
-                    <span className="text-red-400 line-through mr-2">
+                    <span className="text-neutral-400 line-through mr-2">
                       {q.choices[answers[i]!]}
                     </span>
-                    <span className="text-emerald-400">
+                    <span className="text-neutral-700 font-medium">
                       {q.choices[q.correctIndex]}
                     </span>
                   </>
@@ -98,23 +96,20 @@ export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPa
           href={`https://twitter.com/intent/tweet?text=${shareText}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full py-3 px-4 rounded-xl font-bold text-center transition-all duration-300 active:scale-[0.98] text-white"
-          style={{
-            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-          }}
+          className="w-full py-3 px-4 rounded-xl bg-black text-white font-bold text-center hover:bg-neutral-800 transition-colors active:scale-[0.98]"
         >
           Share on X
         </a>
         <button
           onClick={onRetry}
-          className="w-full py-3 px-4 rounded-xl border border-white/10 text-slate-300 font-bold hover:bg-white/5 transition-colors"
+          className="w-full py-3 px-4 rounded-xl border border-neutral-200 text-neutral-600 font-bold hover:bg-neutral-50 transition-colors"
         >
           Try Again
         </button>
         {onBack && (
           <button
             onClick={onBack}
-            className="w-full py-3 px-4 rounded-xl text-slate-600 font-medium hover:text-slate-400 transition-colors"
+            className="w-full py-3 px-4 rounded-xl text-neutral-400 font-medium hover:text-neutral-600 transition-colors"
           >
             Back
           </button>
