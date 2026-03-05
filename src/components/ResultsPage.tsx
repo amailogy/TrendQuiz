@@ -29,7 +29,7 @@ export function ResultsPage({ quiz, answers, score, onRetry, onBack }: ResultsPa
   const gauge = "\u2588".repeat(filled) + "\u2591".repeat(gaugeLength - filled);
 
   const shareText = encodeURIComponent(
-    `\u300Eトレンドクイズ\u300F\n\n${gauge} ${score}/${total}\n\nランク: ${result.rank}\u3000${result.text}\n\n#トレンドクイズ`
+    `${gauge} ${score}/${total}\n\nhttps://trend-quiz.vercel.app`
   );
 
   return (
