@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { loadQuiz } from "@/lib/storage";
+import { fetchTrends } from "@/lib/trends";
+import { generateQuiz } from "@/lib/quiz-generator";
+import { saveQuiz, loadQuiz } from "@/lib/storage";
 import { getTodayJST } from "@/lib/utils";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function GET(request: NextRequest) {
   // Verify cron secret
@@ -14,23 +16,37 @@ export async function GET(request: NextRequest) {
   const today = getTodayJST();
 
   try {
-    const quiz = await loadQuiz(today);
-    if (!quiz) {
+    // Check if already generated
+    const existing = await loadQuiz(today);
+    if (existing) {
+      return NextResponse.json({
+        message: "Quiz already exists",
+        date: today,
+        questions: existing.questions.length,
+      });
+    }
+
+    // Generate new quiz
+    const trends = await fetchTrends();
+    if (trends.length < 5) {
       return NextResponse.json(
-        { error: "Quiz generation failed" },
+        { error: "Not enough trends available" },
         { status: 500 }
       );
     }
 
+    const quiz = await generateQuiz(trends);
+    await saveQuiz(quiz);
+
     return NextResponse.json({
-      message: "Quiz ready",
+      message: "Quiz generated and saved",
       date: today,
       questions: quiz.questions.length,
     });
   } catch (error) {
     console.error("Quiz generation failed:", error);
     return NextResponse.json(
-      { error: "Quiz generation failed" },
+      { error: `Quiz generation failed: ${error}` },
       { status: 500 }
     );
   }

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { loadQuiz } from "@/lib/storage";
 import { getTodayJST } from "@/lib/utils";
 
-export const maxDuration = 60;
+// Read-only: just fetch from Blob storage (no generation)
 
 export async function GET() {
   const today = getTodayJST();
